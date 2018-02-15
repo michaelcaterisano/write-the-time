@@ -4,9 +4,19 @@
 
 3. Run a local web server
 
-	For python 2:
+For python 2:
 ```
 python -m SimpleHTTPServer 8000
+```
+
+For python 3:
+```
+python -m http.server 8000
+```
+
+For node:
+```
+http-server
 ```
 
 
