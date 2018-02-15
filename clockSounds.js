@@ -167,8 +167,8 @@ function getAudioData() {
 }
 
 /**
-* play digit sound
-* @param {number} i index for points array
+* Plays a sound
+* @param {number} i index for start time
 */
 function playSound(i) {
   let source = audioCtx.createBufferSource();
@@ -181,7 +181,7 @@ function playSound(i) {
 
 /**
 * Plays a sound and gets a new time when the sound stops playing
-* @param {number} i index for points array
+* @param {number} i index for start time
 */
 function playEnd(i) {
   let source = playSound(i);
@@ -191,22 +191,23 @@ function playEnd(i) {
 }
 
 /**
-* Sets play duration
+* Wrapper for setTimeout to be used in a for loop
 */
-function setDelay(arr, i, duration, func) {
+function setDelay(arr, i, delay, func) {
   setTimeout(() => {
     func(arr[i])
-  }, duration)
+  }, delay)
 }
 
 /**
-* populates array of time digits
+* Populates array of time digits
 * @param {number} hours
 * @param {number} minutes
 * @param {number} seconds
 */
 function setCurrentTime(hours, minutes, seconds) {
   let digits = [];
+
   digits[0] = Math.floor(hours / 10);
   digits[1] = hours - digits[0] * 10;
   digits[2] = 11;
@@ -220,56 +221,57 @@ function setCurrentTime(hours, minutes, seconds) {
 }
 
 /**
-* populates array of audio start and end times
-* @param {array} digits array of time digits
+* Populates array of audio start times
+* @param {array} currentTime array of time digits
 */
-function setAudioLocations(digits) {
-  let locations = [];
+function setStartTimes(currentTime) {
+  let startTimes = [];
 
+  // loop through currentTime digits and populate startTimes array
   for (let i = 0; i < 8; i++) {
     let rand = Math.floor(Math.random() * 5);
-    let location = digits[i] * 10 + rand * 2;
+    let startTimeIndex = currentTime[i] * 10 + rand * 2;
 
     if (i > 0) {
 
-      while (location === digits[i - 1]) {
+      while (startTimeIndex === currentTime[i - 1]) {
         rand = Math.floor(Math.random() * 5);
-        location = digits[i] * 10 + rand * 2;
+        startTimeIndex = currentTime[i] * 10 + rand * 2;
       } // end while
     } // end if
 
-    locations[i] = location;
+    startTimes[i] = startTimeIndex;
   } // end for loop
 
-  // add silence to end?
-  locations[8] = 120;
+  // add silence to end of startTimes array
+  startTimes[8] = 120;
 
-  // why?
-  if (locations[0] < 10) {
-    locations[0] = 122;
+  // Exclude intitial zero if time is between midnight and noon
+  if (startTimes[0] < 10) {
+    startTimes[0] = 122;
   }
 
-  return locations;
+  return startTimes;
 }
 
 /**
 * Plays the audio
 * @param {array} locations array of indices for points array
 */
-function playSounds(locations) {
+function writeTheTime(startTimes) {
 
   // initial duration for the loop
-  let duration = (points[locations[0] + 1] - points[locations[0]]) * 1010.0;
+  let duration = (points[startTimes[0] + 1] - points[startTimes[0]]) * 1010.0;
 
   // Loop through digits, setting play duration
   for (let i = 0; i <= 8; i++) {
     if (i < 8) {
-      setDelay(locations, i, duration, playSound)
-      duration = duration + (points[locations[i] + 1] - points[locations[i]]) * 1010.0;
+      setDelay(startTimes, i, duration, playSound)
+      duration = duration + (points[startTimes[i] + 1] - points[startTimes[i]]) * 1010.0;
     }
     // play silence, call playEnd which calls getTime again, repopulates digits with new time
     if (i === 8) {
-      setDelay(locations, i, duration, playEnd)
+      setDelay(startTimes, i, duration, playEnd)
     }
   }
 }
@@ -285,9 +287,9 @@ function getTime() {
   let seconds = d.getSeconds();
 
   let digits = setCurrentTime(hours, minutes, seconds)
-  let locations = setAudioLocations(digits)
+  let startTimes = setStartTimes(digits)
 
-  playSounds(locations)
+  writeTheTime(startTimes)
 
   // Log time to console
   console.log(`${digits[0]}${digits[1]}:${digits[3]}${digits[4]}:${digits[6]}${digits[7]}`)
