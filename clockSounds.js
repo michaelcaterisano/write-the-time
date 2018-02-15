@@ -175,17 +175,16 @@ function playSound(i) {
   source.buffer = myBuffer;
   source.connect(audioCtx.destination);
   source.start(0, points[i], points[i + 1] - points[i]);
+
+  return source;
 }
 
 /**
-* Plays a silence and gets a new time
+* Plays a sound and gets a new time when the sound stops playing
 * @param {number} i index for points array
 */
 function playEnd(i) {
-  let source = audioCtx.createBufferSource();
-  source.buffer = myBuffer;
-  source.connect(audioCtx.destination);
-  source.start(0, points[i], points[i + 1] - points[i]);
+  let source = playSound(i);
   source.onended = function() {
   getTime();
   }
