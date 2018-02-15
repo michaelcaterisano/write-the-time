@@ -233,15 +233,17 @@ function setStartTimes(currentTime) {
     let startTimeIndex = currentTime[i] * 10 + rand * 2;
 
     if (i > 0) {
-
-      while (startTimeIndex === currentTime[i - 1]) {
+      // prevent same sample from being played twice
+      while (startTimeIndex === startTimes[i - 1]) {
+        console.log(startTimeIndex)
+        console.log(startTimes)
         rand = Math.floor(Math.random() * 5);
         startTimeIndex = currentTime[i] * 10 + rand * 2;
-      } // end while
-    } // end if
+      }
+    }
 
     startTimes[i] = startTimeIndex;
-  } // end for loop
+  } 
 
   // add silence to end of startTimes array
   startTimes[8] = 120;
