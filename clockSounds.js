@@ -139,7 +139,7 @@ points[117] = 47.554;
 points[118] = 47.755;
 points[119] = 48.345;
 
-//
+// silences
 points[120] = 49.9;
 points[121] = 50.1;
 points[122] = 49.9;
@@ -168,36 +168,35 @@ function getAudioData() {
 
 /**
 * play digit sound
-* @param {number} numb index for points array
+* @param {number} i index for points array
 */
-function playData(numb) {
-
+function playSound(i) {
   let source = audioCtx.createBufferSource();
   source.buffer = myBuffer;
   source.connect(audioCtx.destination);
-  source.start(0, points[numb], points[numb + 1] - points[numb]);
+  source.start(0, points[i], points[i + 1] - points[i]);
 }
 
 /**
 * Plays a silence and gets a new time
-* @param {number} numb index for points array
+* @param {number} i index for points array
 */
-function playDataB(numb) {
-  let sourceb = audioCtx.createBufferSource();
-  sourceb.buffer = myBuffer;
-  sourceb.connect(audioCtx.destination);
-  sourceb.start(0, points[numb], points[numb + 1] - points[numb]);
-  sourceb.onended = function() {
-    getTime();
+function playEnd(i) {
+  let source = audioCtx.createBufferSource();
+  source.buffer = myBuffer;
+  source.connect(audioCtx.destination);
+  source.start(0, points[i], points[i + 1] - points[i]);
+  source.onended = function() {
+  getTime();
   }
 }
 
 /**
 * Sets play duration
 */
-function setDelay(arr, index, duration, func) {
+function setDelay(arr, i, duration, func) {
   setTimeout(() => {
-    func(arr[index])
+    func(arr[i])
   }, duration)
 }
 
@@ -226,30 +225,32 @@ function setCurrentTime(hours, minutes, seconds) {
 * @param {array} digits array of time digits
 */
 function setAudioLocations(digits) {
-  let location = [];
+  let locations = [];
+
   for (let i = 0; i < 8; i++) {
-    let y = Math.floor(Math.random() * 5);
-    let z = digits[i] * 10 + y * 2;
+    let rand = Math.floor(Math.random() * 5);
+    let location = digits[i] * 10 + rand * 2;
 
     if (i > 0) {
-      while (z == digits[i - 1]) {
-        y = Math.floor(Math.random() * 5);
-        z = digits[i] * 10 + y * 2;
+
+      while (location === digits[i - 1]) {
+        rand = Math.floor(Math.random() * 5);
+        location = digits[i] * 10 + rand * 2;
       } // end while
     } // end if
 
-    location[i] = z;
+    locations[i] = location;
   } // end for loop
 
   // add silence to end?
-  location[8] = 120;
+  locations[8] = 120;
 
   // why?
-  if (location[0] < 10) {
-    location[0] = 122;
+  if (locations[0] < 10) {
+    locations[0] = 122;
   }
 
-  return location;
+  return locations;
 }
 
 /**
@@ -264,12 +265,12 @@ function playSounds(locations) {
   // Loop through digits, setting play duration
   for (let i = 0; i <= 8; i++) {
     if (i < 8) {
-      setDelay(locations, i, duration, playData)
+      setDelay(locations, i, duration, playSound)
       duration = duration + (points[locations[i] + 1] - points[locations[i]]) * 1010.0;
     }
-    // play silence, call playDataB which calls getTime again, repopulates digits with new time
+    // play silence, call playEnd which calls getTime again, repopulates digits with new time
     if (i === 8) {
-      setDelay(locations, i, duration, playDataB)
+      setDelay(locations, i, duration, playEnd)
     }
   }
 }
